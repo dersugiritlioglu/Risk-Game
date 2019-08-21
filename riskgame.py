@@ -20,7 +20,12 @@ def on_release_enter(key):
         return False
 
 def print_field(field):
+    print("    ",end='')
+    for i in range(field.shape[1]):
+        print(i," ",end='')
+    print("\n")
     for i in range(field.shape[0]):
+        print(i, "  ", end='')
         for j in range(field.shape[1]):
             if field[i][j] == -1:
                 print(".  ", end = '')
@@ -56,25 +61,49 @@ def players_pick_fields(field, pl_count, empty):
             break
         else:
             starting_pl_count = np.where(dicememo==np.max(dicememo))[0].shape[0]
-    print('Player '+ str(starting_player) + ' picks first.')
+            # TODO: player ismi kayıyor. Bir liste yapıp whilein içindeki foru o listede döndürebilirim.
+    print('Player '+ str(starting_player[0]) + ' picks first.')
         
     while empty>0:
-        for i in range(pl_count):
-            print()
+        for pid in range(starting_player[0], starting_player[0]+pl_count):
+            pid = pid%pl_count
+            picked = np.random.randint(0,width*height - empty)
+            filledcount = 0
+            for h in range(height):
+                breakflag = False
+                for w in range(width):    
+                    if field[h][w] == 0:
+                        if filledcount == picked:
+                            print("f,p:",filledcount,picked)
+                            field[h][w] = pid
+                            print("Player ", pid, ": ", h, ",", w)
+                            breakflag = True
+                            break
+                        filledcount += 1
+                if breakflag:
+                    break
+            with Listener(
+                    on_press=on_press,
+                    on_release=on_release_enter) as listener:
+                listener.join()
+        print_field(field)
         empty -= 1
-        
-    with Listener(
-            on_press=on_press,
-            on_release=on_release) as listener:
-        listener.join()
+        # TODO: fix this function
+
+    print('Starting spots are set!')
         
     
 global sparsity
+global width
+global height
+
+width = 10
+height = 10
 sparsity = 0.1
 #pl_count = int(input("How many players? : "))
 pl_count = 3
 
-whos_field = np.zeros((10,10))
+whos_field = np.full((width,height),9)
 empty = formfield(whos_field)
 print_field(whos_field)
 players_pick_fields(whos_field, pl_count, empty)
