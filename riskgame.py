@@ -46,7 +46,7 @@ def formfield(field):
                 empty.append((i,j))
     return empty
 
-def players_pick_fields(field, pl_count, empty):
+def players_pick_fields(field, pl_count, empty, need_press):
     print('Now you will pick spots from the field. Dots are the places you can select,\
          x\'s represent the sea, so noone can take them. Highest dice will pick first.\n')
     dicememo = np.zeros(pl_count)
@@ -80,19 +80,23 @@ def players_pick_fields(field, pl_count, empty):
         # increasing order).
         for pid in range(starting_player[0], starting_player[0]+pl_count):
             pid = pid%pl_count
+            if len(empty) == 0:
+                break
             picked = np.random.randint(len(empty))
             h,w = empty[picked]
             empty.remove((h,w))
             field[h][w] = pid
-            print("Player ", pid, ": ", h, ",", w)
-            print_field(field)
-            if len(empty)>0:
+            if need_press:
+                print("Player ", pid, ": ", h, ",", w)
+                print_field(field)
+            if len(empty)>0 and need_press:
                 with Listener(
                         on_press=on_press,
                         on_release=on_release_enter) as listener:
                     listener.join()
 
     print('Starting spots are set!')
+    print_field(field)
         
     
 global sparsity
@@ -108,7 +112,8 @@ pl_count = 3
 whos_field = np.full((width,height),-2) # -2 indicated not selected yet in the field representation.
 empty = formfield(whos_field)
 print_field(whos_field)
-players_pick_fields(whos_field, pl_count, empty)
+need_press = False
+players_pick_fields(whos_field, pl_count, empty, need_press)
 
 
 
